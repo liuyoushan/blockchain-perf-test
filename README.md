@@ -76,10 +76,10 @@ forge script src/MultiUserConcurrent.s.sol --rpc-url http://127.0.0.1:8545 --bro
 cd ape
 
 # DEX Swap 并发压测
-python stress_dex_swap.py
+python ape/stress_dex_swap.py
 
 # 清算业务压测
-python stress_liquidation.py
+python ape/stress_liquidation.py
 ```
 
 ### 4. 启动监控（Prometheus + Grafana）
@@ -102,7 +102,7 @@ docker compose down
 
 ```bash
 # 方式一：使用启动脚本（推荐）
-./chaos/run_chaos.sh
+source ./chaos/run_chaos.sh
 
 # 方式二：直接运行
 # 完整版（需要root权限，支持网络级故障注入）

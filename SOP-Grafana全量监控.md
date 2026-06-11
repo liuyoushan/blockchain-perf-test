@@ -56,7 +56,7 @@
 | 组件                 | 端口   | 职责                          |
 | ------------------ | ---- | --------------------------- |
 | **Anvil**          | 8545 | 本地测试节点，产生交易和区块数据            |
-| **Chain Exporter** | 9100 | 从广播报告中提取指标，暴露 Prometheus 格式 |
+| **Chain Exporter** | 9102 | 从广播报告中提取指标，暴露 Prometheus 格式 |
 | **Prometheus**     | 9090 | 指标采集、存储和查询                  |
 | **Grafana**        | 3000 | 可视化仪表盘和告警                   |
 
@@ -144,14 +144,14 @@ python3 chain_exporter.py
 
 # 预期输出：
 #  * Serving Flask app 'chain_exporter'
-#  * Running on http://0.0.0.0:9100
+#  * Running on http://0.0.0.0:9102
 ```
 
 ### 3.3 验证 Exporter
 
 ```bash
 # 验证指标端点
-curl http://localhost:9100/metrics
+curl http://localhost:9102/metrics
 
 # 预期输出：
 # # HELP eth_transaction_count_total Total transactions
@@ -172,7 +172,7 @@ curl http://localhost:9100/metrics
 cd /home/liuyoushan/ape-demo/perf/monitoring
 
 # 启动 Docker 容器
-docker-compose up -d
+docker compose up -d
 
 # 预期输出：
 # Creating network "monitoring_default" with the default driver

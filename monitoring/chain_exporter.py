@@ -8,17 +8,8 @@ app = Flask(__name__)
 
 def get_tx_count():
     count = 0
-    broadcast_dir = "/home/liuyoushan/ape-demo/perf/broadcast"
-    if os.path.exists(broadcast_dir):
-        for root, dirs, files in os.walk(broadcast_dir):
-            for f in files:
-                if f.endswith('.json'):
-                    count += 1
-    return count
-
-def get_gas_used():
-    total_gas = 0
-    broadcast_dir = "/home/liuyoushan/ape-demo/perf/broadcast"
+    # 使用绝对路径，确保无论从哪个目录运行都能找到
+    broadcast_dir = '/home/liuyoushan/blockchain-perf-test/build/broadcast'
     if os.path.exists(broadcast_dir):
         for root, dirs, files in os.walk(broadcast_dir):
             for f in files:
@@ -27,7 +18,28 @@ def get_gas_used():
                     try:
                         with open(file_path, 'r') as file:
                             data = json.load(file)
-                            for receipt in data.get('receipts', []):
+                            # Foundry 广播文件格式：transactions 数组
+                            transactions = data.get('transactions', [])
+                            count += len(transactions)
+                    except Exception as e:
+                        pass
+    return count
+
+def get_gas_used():
+    total_gas = 0
+    # 使用绝对路径，确保无论从哪个目录运行都能找到
+    broadcast_dir = '/home/liuyoushan/blockchain-perf-test/build/broadcast'
+    if os.path.exists(broadcast_dir):
+        for root, dirs, files in os.walk(broadcast_dir):
+            for f in files:
+                if f.endswith('.json'):
+                    file_path = os.path.join(root, f)
+                    try:
+                        with open(file_path, 'r') as file:
+                            data = json.load(file)
+                            # Foundry 广播文件格式：receipts 数组是独立的
+                            receipts = data.get('receipts', [])
+                            for receipt in receipts:
                                 gas = receipt.get('gasUsed')
                                 if gas:
                                     total_gas += int(gas, 16) if isinstance(gas, str) else gas
