@@ -15,7 +15,8 @@ from web3 import Web3
 # 配置参数
 CONCURRENT_USERS = 10
 SWAP_AMOUNT = 10**18
-REPORT_DIR = "../reports/python"
+# 使用绝对路径确保无论从哪个目录运行都能找到
+REPORT_DIR = "/home/liuyoushan/blockchain-perf-test/reports/python"
 RPC_URL = "http://127.0.0.1:8545"
 
 # Anvil 默认测试账户私钥
