@@ -252,7 +252,7 @@ class BlockchainChaosEngine:
     
     def save_report(self):
         """保存测试报告"""
-        report_dir = "/home/liuyoushan/ape-demo/perf/chaos/reports"
+        report_dir = "/home/liuyoushan/blockchain-perf-test/reports/chaos"
         os.makedirs(report_dir, exist_ok=True)
         
         report_path = os.path.join(
