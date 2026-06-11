@@ -1,0 +1,21 @@
+[profile.default]
+src = "src"
+test = "test"
+# 将所有构建产物统一放到 build/ 目录下，保持项目根目录整洁
+out = "build/out"
+cache_path = "build/cache"
+broadcast = "build/broadcast"
+optimizer = true
+optimizer_runs = 1000000
+via_ir = true
+solc = "0.8.20"
+# 关键：放行上级contracts目录，解除"文件超出允许目录"拦截
+allow_paths = ["../contracts"]
+# 路径映射不变，保留原来的配置
+remappings = [
+    "forge-std/=lib/forge-std/src/",
+    "contracts/=../contracts/"
+]
+
+[rpc_endpoints]
+local = "http://127.0.0.1:8545"

@@ -1,0 +1,33 @@
+# Foundry 构建输出
+out/
+cache/
+broadcast/
+
+# Foundry 依赖锁文件
+foundry.lock
+
+# 环境变量（可能包含敏感信息）
+.env
+
+# Python 缓存
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# 混沌测试报告
+chaos/reports/
+
+# VS Code 配置
+.vscode/
+
+# 临时文件
+*.swp
+*.bak
+*.tmp
+
+# Node.js (如果使用)
+node_modules/
+
+# 日志文件
+*.log

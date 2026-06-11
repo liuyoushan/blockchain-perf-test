@@ -1,0 +1,51 @@
+{
+  "title": "Blockchain Performance Dashboard",
+  "tags": ["blockchain", "performance"],
+  "timezone": "browser",
+  "panels": [
+    {
+      "title": "Gas Used per Transaction",
+      "type": "graph",
+      "gridPos": {"x": 0, "y": 0, "w": 12, "h": 8},
+      "targets": [
+        {
+          "expr": "avg(perf_gas_avg)",
+          "legendFormat": "Gas Used"
+        }
+      ]
+    },
+    {
+      "title": "Transaction Success Rate",
+      "type": "gauge",
+      "gridPos": {"x": 12, "y": 0, "w": 6, "h": 8},
+      "targets": [
+        {
+          "expr": "sum(rate(perf_tx_success_total[1m])) / sum(rate(perf_tx_total[1m])) * 100",
+          "legendFormat": "Success Rate %"
+        }
+      ]
+    },
+    {
+      "title": "Transactions Per Second (TPS)",
+      "type": "graph",
+      "gridPos": {"x": 0, "y": 8, "w": 12, "h": 8},
+      "targets": [
+        {
+          "expr": "sum(rate(perf_tx_total[1m]))",
+          "legendFormat": "TPS"
+        }
+      ]
+    },
+    {
+      "title": "Average Block Time",
+      "type": "graph",
+      "gridPos": {"x": 12, "y": 8, "w": 12, "h": 8},
+      "targets": [
+        {
+          "expr": "avg(perf_block_time_seconds)",
+          "legendFormat": "Block Time (s)"
+        }
+      ]
+    }
+  ]
+}
