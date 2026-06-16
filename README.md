@@ -61,13 +61,16 @@ anvil --chain-id 31337
 
 ```bash
 # Gas 基准测试
-forge script src/GasBenchmark.s.sol --rpc-url http://127.0.0.1:8545 --broadcast
+forge script src/GasBenchmark.s.sol --rpc-url http://127.0.0.1:8545 --broadcast 2>&1 | head -100
 
 # 单区块负载压测
-forge script src/SingleBlockLoad.s.sol --rpc-url http://127.0.0.1:8545 --broadcast
+forge script src/SingleBlockLoad.s.sol --rpc-url http://127.0.0.1:8545 --broadcast 2>&1 | head -100
 
 # 多用户并发压测
-forge script src/MultiUserConcurrent.s.sol --rpc-url http://127.0.0.1:8545 --broadcast
+forge script src/MultiUserConcurrent.s.sol --rpc-url http://127.0.0.1:8545 --broadcast 2>&1 | head -100
+
+# 或使用便捷脚本运行全部三个
+./run_benchmark.sh
 ```
 
 ### 3. Ape 压测（Python）
