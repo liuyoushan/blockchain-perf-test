@@ -48,6 +48,57 @@ blockchain-perf-test/
 | Python压测  | `reports/python/stress_*.json`      | JSON       |
 | Foundry压测 | `build/broadcast/` + 控制台输出          | JSON + 控制台 |
 
+
+## 压测流程图
+
+```mermaid
+flowchart TD
+    %% 开始
+    Start["开始DeFi性能压测"] --> Pre[一、压测前置准备]
+
+    %% 前置准备分支
+    Pre --> Pre1[1.部署DeFi合约+初始化池子/流动性]
+    Pre1 --> Pre2[2.启动Anvil分叉节点，配置RPC端口]
+    Pre2 --> Pre3[3.批量生成测试钱包，分配地址池]
+    Pre3 --> Pre4[4.配置压测参数：并发数、时长、Swap/清算场景]
+    Pre4 --> Pre5[5.启动Prometheus+Grafana监控采集]
+
+    %% 选择压测类型
+    Pre5 --> TestSelect{选择压测类型}
+    TestSelect -->|Foundry Solidity压测| FTest[执行Gas基准/单区块负载/多用户并发脚本]
+    TestSelect -->|Ape Python并发压测| APTest[执行DEX Swap/清算长时压测脚本]
+    TestSelect -->|混沌工程测试| ChaosTest[基准期→故障注入→恢复期三期执行]
+
+    %% 统一生成报告
+    FTest --> ReportGen[自动输出结构化测试报告JSON+控制台日志]
+    APTest --> ReportGen
+    ChaosTest --> ReportGen
+
+    %% 结果判定（匹配你的《分析指南》合格标准）
+    ReportGen --> Judge{按指标判定是否通过?<br/>核心：成功率≥95%}
+    Judge -->|✅ 指标全部达标：TPS/Gas/时延符合预期| Pass[测试通过，归档报告+版本容量备案]
+    Judge -->|❌ TPS触顶、成功率下滑、性能不达标| BottleneckStart[进入瓶颈分层排查流程]
+
+    %% 瓶颈排查链路（复用你之前的五层判断逻辑）
+    BottleneckStart --> B1[查看区块Gas利用率]
+    B1 -->|利用率95%~100%| BType1[瓶颈1：合约逻辑冗余+区块Gas上限瓶颈<br/>统计单笔Gas是否超限，优化循环/存储读写]
+    B1 -->|利用率＜70%| B2[查看服务器CPU/内存占用]
+
+    B2 -->|CPU≥95%/内存打满| BType2[瓶颈2：Anvil单机节点性能上限<br/>单机上限300~400TPS，考虑分布式压测扩容]
+    B2 -->|硬件资源空闲| B3[检查RPC请求报错&发压程序队列]
+
+    B3 -->|大量429/交易pending堆积| BType3[瓶颈3：RPC网关QPS限流<br/>更换付费RPC、自建节点、负载均衡]
+    B3 -->|单账户交易排队、Nonce错乱| BType4[瓶颈4：发压客户端并发设计缺陷<br/>拆分多地址池、改用异步协程模型]
+    B3 -->|同池子交易大量回滚失败| BType5[瓶颈5：存储槽并发竞争冲突<br/>单存储槽并发控制在15~20笔以内]
+
+    %% 优化后复测闭环
+    BType1 & BType2 & BType3 & BType4 & BType5 --> Optimize[针对性优化方案落地<br/>1.合约降Gas优化 2.分布式多节点压测改造 3.发压逻辑调整]
+    Optimize --> ReTest[重新发起一轮完整压测验证]
+    ReTest --> ReportGen
+
+    Pass --> End["压测流程结束"]
+```
+
 ## 执行方式
 
 ### 1. 启动本地测试节点
@@ -159,55 +210,6 @@ python3 chaos/chaos_simple.py
 | 平均 Gas/笔 | 取决于执行 |
 
 
-## 压测流程图
-
-```mermaid
-flowchart TD
-    %% 开始
-    Start["开始DeFi性能压测"] --> Pre[一、压测前置准备]
-
-    %% 前置准备分支
-    Pre --> Pre1[1.部署DeFi合约+初始化池子/流动性]
-    Pre1 --> Pre2[2.启动Anvil分叉节点，配置RPC端口]
-    Pre2 --> Pre3[3.批量生成测试钱包，分配地址池]
-    Pre3 --> Pre4[4.配置压测参数：并发数、时长、Swap/清算场景]
-    Pre4 --> Pre5[5.启动Prometheus+Grafana监控采集]
-
-    %% 选择压测类型
-    Pre5 --> TestSelect{选择压测类型}
-    TestSelect -->|Foundry Solidity压测| FTest[执行Gas基准/单区块负载/多用户并发脚本]
-    TestSelect -->|Ape Python并发压测| APTest[执行DEX Swap/清算长时压测脚本]
-    TestSelect -->|混沌工程测试| ChaosTest[基准期→故障注入→恢复期三期执行]
-
-    %% 统一生成报告
-    FTest --> ReportGen[自动输出结构化测试报告JSON+控制台日志]
-    APTest --> ReportGen
-    ChaosTest --> ReportGen
-
-    %% 结果判定（匹配你的《分析指南》合格标准）
-    ReportGen --> Judge{按指标判定是否通过?<br/>核心：成功率≥95%}
-    Judge -->|✅ 指标全部达标：TPS/Gas/时延符合预期| Pass[测试通过，归档报告+版本容量备案]
-    Judge -->|❌ TPS触顶、成功率下滑、性能不达标| BottleneckStart[进入瓶颈分层排查流程]
-
-    %% 瓶颈排查链路（复用你之前的五层判断逻辑）
-    BottleneckStart --> B1[查看区块Gas利用率]
-    B1 -->|利用率95%~100%| BType1[瓶颈1：合约逻辑冗余+区块Gas上限瓶颈<br/>统计单笔Gas是否超限，优化循环/存储读写]
-    B1 -->|利用率＜70%| B2[查看服务器CPU/内存占用]
-
-    B2 -->|CPU≥95%/内存打满| BType2[瓶颈2：Anvil单机节点性能上限<br/>单机上限300~400TPS，考虑分布式压测扩容]
-    B2 -->|硬件资源空闲| B3[检查RPC请求报错&发压程序队列]
-
-    B3 -->|大量429/交易pending堆积| BType3[瓶颈3：RPC网关QPS限流<br/>更换付费RPC、自建节点、负载均衡]
-    B3 -->|单账户交易排队、Nonce错乱| BType4[瓶颈4：发压客户端并发设计缺陷<br/>拆分多地址池、改用异步协程模型]
-    B3 -->|同池子交易大量回滚失败| BType5[瓶颈5：存储槽并发竞争冲突<br/>单存储槽并发控制在15~20笔以内]
-
-    %% 优化后复测闭环
-    BType1 & BType2 & BType3 & BType4 & BType5 --> Optimize[针对性优化方案落地<br/>1.合约降Gas优化 2.分布式多节点压测改造 3.发压逻辑调整]
-    Optimize --> ReTest[重新发起一轮完整压测验证]
-    ReTest --> ReportGen
-
-    Pass --> End["压测流程结束"]
-```
 
 ## 压测脚本说明
 
