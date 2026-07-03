@@ -47,6 +47,7 @@ blockchain-perf-test/
 | 混沌测试      | `reports/chaos/chaos_report_*.json` | JSON       |
 | Python压测  | `reports/python/stress_*.json`      | JSON       |
 | Foundry压测 | `build/broadcast/` + 控制台输出          | JSON + 控制台 |
+| Gas Report  | `reports/foundry/gas_report.txt`    | 文本       |
 
 
 ## 压测流程图
@@ -120,7 +121,10 @@ forge script src/SingleBlockLoad.s.sol --rpc-url http://127.0.0.1:8545 --broadca
 # 多用户并发压测
 forge script src/MultiUserConcurrent.s.sol --rpc-url http://127.0.0.1:8545 --broadcast 2>&1 | head -100
 
-# 或使用便捷脚本运行全部三个
+# Gas Report 性能分析（生成函数级 Gas 消耗报告）
+forge test --gas-report -vv
+
+# 或使用便捷脚本运行全部测试（包含 Gas Report）
 ./src/run_foundry_test.sh
 ```
 
@@ -236,14 +240,38 @@ python3 chaos/chaos_simple.py
 - 模拟真实并发场景
 - 使用事件输出报告
 
+### GasReport.t.sol
+
+Foundry Gas Report 性能分析测试：
+
+- `test_gas_swap` - Swap 交易 Gas 消耗
+- `test_gas_addLiquidity` - 添加流动性 Gas 消耗
+- `test_gas_removeLiquidity` - 移除流动性 Gas 消耗
+- `test_gas_mint` - 铸币 Gas 消耗
+- `test_gas_transfer` - 转账 Gas 消耗
+- `test_gas_approve` - 授权 Gas 消耗
+- `test_gas_createPair` - 创建交易对 Gas 消耗
+
+**执行方式**：
+```bash
+forge test --gas-report -vv
+```
+
+**报告输出**：`reports/foundry/gas_report.txt`，包含每个函数的 Gas 消耗详情，用于性能优化基线对比。
+
 ## Foundry 配置优化
 
-`foundry.toml` 已配置将所有构建产物统一放到 `build/` 目录：
+`foundry.toml` 已配置将所有构建产物统一放到 `build/` 目录，并启用 Gas Report 功能：
 
 ```toml
 out = "build/out"
 cache_path = "build/cache"
 broadcast = "build/broadcast"
+
+[gas_reports]
+enabled = true
+include = ["MiniSwapRouter", "MiniSwapPair", "MyERC20"]
+output = "reports/foundry/gas_report.txt"
 ```
 
 ## 注意事项

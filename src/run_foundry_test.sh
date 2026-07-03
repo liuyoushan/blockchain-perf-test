@@ -26,6 +26,10 @@ cd "$PROJECT_ROOT"
 echo "📦 编译合约..."
 forge build 2>&1 | tail -20
 
+echo "📊 执行 Gas Report 性能分析..."
+mkdir -p reports/foundry
+forge test --gas-report -vv 2>&1 | tee reports/foundry/gas_report.txt
+
 echo "📦 执行 MultiUserConcurrent 测试..."
 forge script src/MultiUserConcurrent.s.sol --rpc-url "$RPC_URL" --broadcast -vvv
 

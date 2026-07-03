@@ -19,3 +19,9 @@ remappings = [
 
 [rpc_endpoints]
 local = "http://127.0.0.1:8545"
+
+[gas_reports]
+enabled = true
+include = ["MiniSwapRouter", "MiniSwapPair", "MyERC20"]
+exclude = []
+output = "reports/foundry/gas_report.txt"
